@@ -1,0 +1,12 @@
+{% include 'yelpCamp/partials/header.html' %}
+<h1>This is campgrounds page</h1>
+
+<ul>
+    {% for campground in campgroundList %}
+    <div>
+        <h4>{{ campground.name }}</h4>
+        <img src="{{ campground.imageUrl }}" alt="">
+    </div>
+    {% endfor %}
+</ul>
+{% include 'yelpCamp/partials/footer.html' %}
