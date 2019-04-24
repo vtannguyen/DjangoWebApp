@@ -1,0 +1,13 @@
+{% include 'yelpCamp/partials/header.html' %}
+
+<h1>Create a new Campground</h1>
+
+<form action="{% url 'yelpCamp:campgrounds' %}" method="POST">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="submit">
+</form>
+
+{% include 'yelpCamp/partials/footer.html' %}

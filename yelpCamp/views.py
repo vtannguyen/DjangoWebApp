@@ -1,16 +1,29 @@
 from django.shortcuts import render
+from django.urls import reverse
 from django.views import generic
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from .models import Campground
+from .forms import NewCampgroundForm
 
 def landing(request):
     return render(request, 'yelpCamp/landing.html')
 
-class CampgroundView(generic.ListView):
-    template_name = 'yelpCamp/campgrounds.html'
-    context_object_name = 'campgroundList'
+def campgrounds(request):
+    if request.method == 'POST':
+        form = NewCampgroundForm(request.POST)
+        if form.is_valid():
+            campground_instance = Campground(name=form.cleaned_data['name'], imageUrl=form.cleaned_data['imageUrl'])
+            campground_instance.save()
 
-    def get_queryset(self):
-        return Campground.objects.all().order_by('-name')
+            return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
+    else:
+        campgroundList = Campground.objects.all().order_by('-name')
+        return render(request, 'yelpCamp/campgrounds.html', {'campgroundList': campgroundList})
+
+
+def campgroundsNew(request):
+    form = NewCampgroundForm(initial={'name': '', 'imageUrl': ''})
+    context = {'form': form}
+    return render(request, 'yelpCamp/campgroundsNew.html', context)
