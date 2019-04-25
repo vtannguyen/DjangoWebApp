@@ -16,14 +16,14 @@
 
     <div class="row" style="display:flex; flex-wrap: wrap">
         {% for campground in campgroundList %}
-        <div class="col-md-3 col-sm-6">
+        <a href="{% url 'yelpCamp:campgroundDetails' campground.id %}" class="col-md-3 col-sm-6">
             <div class="card ">
                 <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
                 <div class="caption d-flex justify-content-center">
                     <h4>{{ campground.name }}</h4>
                 </div>
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
 </div>

@@ -7,4 +7,5 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('campgrounds/', views.campgrounds, name='campgrounds'),
     path('campgrounds/new', views.campgroundsNew, name='campgroundsNew'),
+    path('campgrounds/<int:campground_id>', views.campgroundDetails, name='campgroundDetails'),
 ]

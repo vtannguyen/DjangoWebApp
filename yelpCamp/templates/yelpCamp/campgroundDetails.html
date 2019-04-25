@@ -1,0 +1,13 @@
+{% include 'yelpCamp/partials/header.html' %}
+
+<div class="row" style="display:flex; flex-wrap: wrap">
+    <div class="col-md-3 col-sm-6">
+        <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+        <div class="caption d-flex justify-content-center">
+            <h4>{{ campground.name }}</h4>
+        </div>
+        <h5>{{ campground.description }}</h5>
+    </div>
+</div>
+
+{% include 'yelpCamp/partials/footer.html' %}
