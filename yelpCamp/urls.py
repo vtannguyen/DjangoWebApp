@@ -8,4 +8,6 @@ urlpatterns = [
     path('campgrounds/', views.campgrounds, name='campgrounds'),
     path('campgrounds/new', views.campgroundsNew, name='campgroundsNew'),
     path('campgrounds/<int:campground_id>', views.campgroundDetails, name='campgroundDetails'),
+    path('campgrounds/<int:campground_id>/comments/new', views.commentsNew, name='commentsNew'),
+    path('campgrounds/<int:campground_id>/comments', views.comments, name='comments'),
 ]

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..forms import NewCampgroundForm
+from ..forms import NewCampgroundForm, NewCommentForm
 
 CORRECT_IMAGE_URL = 'http://www.nextcampsite.com/wp-content/uploads/2014/07/Lost-Creek-Campground-D08.jpg'
 
@@ -33,3 +33,13 @@ class NewCampgroundFormTest(TestCase):
         form = NewCampgroundForm(data=form_data_noDescription)
         self.assertFalse(form.is_valid())
 
+class NewCommentFormTest(TestCase):
+    def test_new_comment_form_valid(self):
+        form_data = {'text': 'this is a comment'}
+        form = NewCommentForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_new_comment_form_invalid(self):
+        form_data = {'text': ''}
+        form = NewCommentForm(data=form_data)
+        self.assertFalse(form.is_valid())

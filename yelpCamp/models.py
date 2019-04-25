@@ -8,3 +8,11 @@ class Campground(models.Model):
 
     def __str__(self):
         return self.name
+
+class Comment(models.Model):
+    campground = models.ForeignKey(Campground, on_delete=models.CASCADE)
+    text = models.CharField(max_length=200)
+    timestamp = models.DateTimeField('comment timestamp')
+
+    def __str__(self):
+        return self.text

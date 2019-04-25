@@ -10,4 +10,12 @@
     </div>
 </div>
 
+<div>
+    {% for comment in comments %}
+    <h4>{{ comment }}</h4>
+    {% endfor %}
+</div>
+
+<a class="btn btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
+
 {% include 'yelpCamp/partials/footer.html' %}
