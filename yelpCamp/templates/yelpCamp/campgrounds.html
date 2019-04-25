@@ -1,12 +1,31 @@
 {% include 'yelpCamp/partials/header.html' %}
-<h1>This is campgrounds page</h1>
 
-<ul>
-    {% for campground in campgroundList %}
-    <div>
-        <h4>{{ campground.name }}</h4>
-        <img src="{{ campground.imageUrl }}" alt="">
+
+<div class="container">
+    <header class="jumbotron">
+        <div class="container">
+            <h1>Welcome To YelpCamp!</h1>
+            <p>View our hand-picked campgrounds from all over the world</p>
+            <p>
+                <a class="btn btn-primary btn-large" href="{% url 'yelpCamp:campgroundsNew' %}">
+                    Add new Campground
+                </a>
+            </p>
+        </div>
+    </header>
+
+    <div class="row" style="display:flex; flex-wrap: wrap">
+        {% for campground in campgroundList %}
+        <div class="col-md-3 col-sm-6">
+            <div class="card ">
+                <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+                <div class="caption d-flex justify-content-center">
+                    <h4>{{ campground.name }}</h4>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</ul>
+</div>
+
 {% include 'yelpCamp/partials/footer.html' %}
