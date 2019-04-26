@@ -1,7 +1,8 @@
-{% include 'yelpCamp/partials/header.html' %}
+{% extends 'yelpCamp/BaseGeneric.html' %}
 
+{% block content %}
 this is the landing page
 
 <a href="{% url 'yelpCamp:campgrounds' %}">go to campground</a>
+{% endblock %}
 
-{% include 'yelpCamp/partials/footer.html' %}

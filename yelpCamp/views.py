@@ -1,12 +1,15 @@
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import login, authenticate
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 from .models import Campground, Comment
 from .forms import NewCampgroundForm, NewCommentForm
+from django.contrib.auth.forms import UserCreationForm
 
 
 def landing(request):
@@ -14,7 +17,7 @@ def landing(request):
 
 
 def campgrounds(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated:
         form = NewCampgroundForm(request.POST)
         if form.is_valid():
             campground_instance = Campground(
@@ -26,13 +29,14 @@ def campgrounds(request):
 
             return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
         else:
-            return HttpResponseRedirect(reverse('yelpCamp:campgroundsNew'))
+            return render(request, 'yelpCamp/campgroundsNew.html', {'form': form})
 
     else:
         campgroundList = Campground.objects.all().order_by('-name')
         return render(request, 'yelpCamp/campgrounds.html', {'campgroundList': campgroundList})
 
 
+@login_required
 def campgroundsNew(request):
     form = NewCampgroundForm(initial={'name': '', 'imageUrl': ''})
     context = {'form': form}
@@ -49,6 +53,7 @@ def campgroundDetails(request, campground_id):
     return render(request, 'yelpCamp/campgroundDetails.html', context)
 
 
+@login_required
 def commentsNew(request, campground_id):
     form = NewCommentForm(initial={'text': ''})
     contex = {'form': form, 'campground_id': campground_id}
@@ -56,7 +61,7 @@ def commentsNew(request, campground_id):
 
 
 def comments(request, campground_id):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated:
         form = NewCommentForm(request.POST)
         if form.is_valid():
             campground_instance = Campground.objects.get(pk=campground_id)
@@ -70,8 +75,28 @@ def comments(request, campground_id):
 
             return HttpResponseRedirect(url)
         else:
-            return HttpResponseRedirect(reverse('yelpCamp:campgroundsNew'))
-    elif request.method == 'GET':
+            return render(request, 'yelpCamp/campgroundsNew.html', {'form': form})
+    else:
         redirectUrl = reverse('yelpCamp:campgroundDetails', args=(campground_id,))
         return HttpResponseRedirect(redirectUrl)
+
+
+def userSignup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
+        else:
+            return render(request, 'yelpCamp/userSignup.html', {'form': form})
+    elif request.method == 'GET':
+        context = {
+            'form': UserCreationForm
+        }
+        return render(request, 'yelpCamp/userSignup.html', context)
+
 

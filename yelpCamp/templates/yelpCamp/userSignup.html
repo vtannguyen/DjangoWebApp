@@ -1,0 +1,30 @@
+{% extends 'yelpCamp/BaseGeneric.html' %}
+
+{% block content %}
+<form action="{% url 'yelpCamp:userSignup' %}" method="POST">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="container d-flex flex-column align-items-center">
+            <div class="col-md-6">
+                <div class="d-flex flex-column">
+                    {% for field in form %}
+                        <div>
+                            {{ field.label_tag }} {{ field }}
+                        </div>
+                        {% if field.help_text %}
+                        <small style="color: grey">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <div class="form-group btn-block">
+                    <input type="submit" value="Submit" class="btn btn-block btn-outline-primary">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

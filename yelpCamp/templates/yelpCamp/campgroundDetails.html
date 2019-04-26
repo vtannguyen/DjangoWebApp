@@ -1,21 +1,43 @@
-{% include 'yelpCamp/partials/header.html' %}
+{% extends 'yelpCamp/BaseGeneric.html' %}
 
-<div class="row" style="display:flex; flex-wrap: wrap">
-    <div class="col-md-3 col-sm-6">
-        <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
-        <div class="caption d-flex justify-content-center">
-            <h4>{{ campground.name }}</h4>
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <p class="lead">YelpCamp</p>
+            <div class="list-group">
+                <li class="list-group-item active">Info 1</li>
+                <li class="list-group-item">Info 2</li>
+                <li class="list-group-item">Info 3</li>
+            </div>
         </div>
-        <h5>{{ campground.description }}</h5>
+        <div class="col-md-9">
+            <div class="card" style="display:flex; flex-wrap: wrap">
+                <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+                <div style="padding: 10px">
+                    <div class="caption-full d-flex flex-row justify-content-between">
+                        <h4><a href="#">{{ campground.name }}</a></h4>
+                        <h4>$9.00/night</h4>
+                    </div>
+                    <p>{{ campground.description }}</p>
+                </div>
+            </div>
+
+            <div class="card border-primary mb-3 mt-3">
+                <div class="card-header d-flex flex-row-reverse">
+                  <a class="btn btn-sm btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
+                </div>
+                {% for comment in comments %}
+                <div class="card-body text-primary">
+                    <div class="d-flex flex-row justify-content-between">
+                        <h5 class="card-title">Author</h5>
+                        <h5>10 days ago</h5>
+                    </div>
+                    <p class="card-text">{{ comment }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
-
-<div>
-    {% for comment in comments %}
-    <h4>{{ comment }}</h4>
-    {% endfor %}
-</div>
-
-<a class="btn btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
-
-{% include 'yelpCamp/partials/footer.html' %}
+{% endblock %}

@@ -1,5 +1,6 @@
-{% include 'yelpCamp/partials/header.html' %}
+{% extends 'yelpCamp/BaseGeneric.html' %}
 
+{% block content %}
 <div class="container d-flex flex-column justify-content-center align-items-center">
     <h1>Add new comment to ...</h1>
 
@@ -15,5 +16,5 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
-{% include 'yelpCamp/partials/footer.html' %}

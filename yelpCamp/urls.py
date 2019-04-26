@@ -10,4 +10,5 @@ urlpatterns = [
     path('campgrounds/<int:campground_id>', views.campgroundDetails, name='campgroundDetails'),
     path('campgrounds/<int:campground_id>/comments/new', views.commentsNew, name='commentsNew'),
     path('campgrounds/<int:campground_id>/comments', views.comments, name='comments'),
+    path('signup', views.userSignup, name='userSignup'),
 ]
