@@ -1,0 +1,4 @@
+.campgroundImage {
+    display:flex;
+    flex-wrap: wrap
+}

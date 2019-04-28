@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.urls import reverse
 from django.utils import timezone
+import json
 from django.views import generic
+from django.http import QueryDict
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -23,14 +25,14 @@ def campgrounds(request):
             campground_instance = Campground(
                 name=form.cleaned_data['name'],
                 imageUrl=form.cleaned_data['imageUrl'],
-                description=form.cleaned_data['description']
+                description=form.cleaned_data['description'],
+                user=request.user
             )
             campground_instance.save()
 
             return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
         else:
             return render(request, 'yelpCamp/campgroundsNew.html', {'form': form})
-
     else:
         campgroundList = Campground.objects.all().order_by('-name')
         return render(request, 'yelpCamp/campgrounds.html', {'campgroundList': campgroundList})
@@ -46,11 +48,42 @@ def campgroundsNew(request):
 def campgroundDetails(request, campground_id):
     campground = get_object_or_404(Campground, pk=campground_id)
     comments = Comment.objects.filter(campground__id__exact=campground_id)
+
+    if request.method == 'PUT':
+        if request.user.is_authenticated and campground.user == request.user:
+            form = NewCampgroundForm(request.POST)
+            if form.is_valid():
+                campground.name = form.cleaned_data['name']
+                campground.description = form.cleaned_data['description']
+                campground.imageUrl = form.cleaned_data['imageUrl']
+                campground.save()
+    elif request.method == 'DELETE':
+        if request.user.is_authenticated and campground.user == request.user:
+            campground.delete()
+        return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
+
     context = {
         'campground': campground,
         'comments': comments
     }
     return render(request, 'yelpCamp/campgroundDetails.html', context)
+
+
+@login_required
+def campgroundEdit(request, campground_id):
+    campground = get_object_or_404(Campground, pk=campground_id)
+    form = NewCampgroundForm(initial={
+        'name': campground.name,
+        'imageUrl': campground.imageUrl,
+        'description': campground.description
+    })
+    if campground.user.username == request.user.username:
+        return render(request, 'yelpCamp/campgroundEdit.html', {
+            'form': form,
+            'campground_id': campground_id
+        })
+    else:
+        return HttpResponseRedirect(reverse('yelpCamp:campgroundDetails', args=(campground_id,)))
 
 
 @login_required
@@ -68,7 +101,9 @@ def comments(request, campground_id):
             comment_instance = Comment(
                 text=form.cleaned_data['text'],
                 timestamp=timezone.now(),
-                campground=campground_instance)
+                campground=campground_instance,
+                user=request.user
+            )
             comment_instance.save()
 
             url = reverse('yelpCamp:campgroundDetails', args=(campground_id,))
