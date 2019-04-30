@@ -6,10 +6,8 @@
 <div class="container">
     <div class="row d-flex flex-column align-items-center">
         <div class="col-md-3">
-            {% load method_override %}
             <form action="{% url 'yelpCamp:campgroundDetails' campground_id %}" method="POST" class="d-flex flex-column align-items-center mt-4">
             {% csrf_token %}
-            {% method_override 'PUT' %}
             <div class="form-group">
                 <table>
                     {{ form.as_table }}
