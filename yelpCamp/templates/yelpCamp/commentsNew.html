@@ -2,9 +2,9 @@
 
 {% block content %}
 <div class="container d-flex flex-column justify-content-center align-items-center">
-    <h1>Add new comment to ...</h1>
+    <h1>Add new comment to {{ campgroundName }}</h1>
 
-    <form action="{% url 'yelpCamp:comments' campground_id %}" method="POST" class="d-flex flex-column align-items-center" style="margin: 30px auto">
+    <form action="{% url 'yelpCamp:comments' campground_id %}" method="POST" class="d-flex flex-column align-items-center mt-5">
         {% csrf_token %}
         <div class="form-group">
             <table>

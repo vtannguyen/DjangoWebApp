@@ -4,7 +4,10 @@
 <div class="container">
     <header class="jumbotron">
         <div class="container">
-            <h1>Welcome To YelpCamp!</h1>
+            <div class="d-flex flex-row align-items-end pb-3">
+                <img src="https://img.icons8.com/cotton/64/000000/camping-tent.png">
+                <h1 class="mb-0 pl-2">Welcome To YelpCamp!</h1>
+            </div>
             <p>View our hand-picked campgrounds from all over the world</p>
             <p>
                 <a class="btn btn-primary btn-large" href="{% url 'yelpCamp:campgroundsNew' %}">
@@ -17,8 +20,10 @@
     <div class="row campgroundImage">
         {% for campground in campgroundList %}
         <a href="{% url 'yelpCamp:campgroundDetails' campground.id %}" class="col-md-3 col-sm-6">
-            <div class="card ">
-                <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+            <div class="card mb-5">
+                <div class="campgroundImageSmall">
+                    <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+                </div>
                 <div class="caption d-flex justify-content-center">
                     <h4>{{ campground.name }}</h4>
                 </div>

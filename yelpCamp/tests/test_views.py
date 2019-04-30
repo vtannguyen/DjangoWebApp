@@ -153,7 +153,6 @@ class CampgroundEditTest(TestCase):
         newDescription = 'new description'
 
         self.client.post(url, data={
-            '_method': 'PUT',
             'name': newName,
             'imageUrl': newImageUrl,
             'description': newDescription
@@ -179,7 +178,6 @@ class CampgroundEditTest(TestCase):
         newDescription = 'new description'
 
         response = self.client.post(url, {
-            '_method': 'PUT',
             'name': newName,
             'imageUrl': newImageUrl,
             'description': newDescription
@@ -251,6 +249,7 @@ class CommentNewViewTest(TestCase):
         url = reverse('yelpCamp:commentsNew', args=(camp_test.id,))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, camp_test.id)
 
     def test_add_comment_to_database_by_authenticated_user(self):
         user = createUserAndLogin(self)

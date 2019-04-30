@@ -4,7 +4,7 @@
 <div class="container d-flex flex-column justify-content-center align-items-center">
     <h1>Create a new Campground</h1>
 
-    <form action="{% url 'yelpCamp:campgrounds' %}" method="POST" class="d-flex flex-column align-items-center" style="margin: 30px auto">
+    <form action="{% url 'yelpCamp:campgrounds' %}" method="POST" class="d-flex flex-column align-items-center mt-5">
         {% csrf_token %}
         <div class="form-group">
             <table>

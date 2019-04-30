@@ -15,4 +15,7 @@ class NewCampgroundForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}))
 
 class NewCommentForm(forms.Form):
-    text = forms.CharField(max_length=200)
+    text = forms.CharField(
+        label='',
+        max_length=200,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'comment'}))

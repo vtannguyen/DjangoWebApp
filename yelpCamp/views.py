@@ -49,7 +49,7 @@ def campgroundDetails(request, campground_id):
     campground = get_object_or_404(Campground, pk=campground_id)
     comments = Comment.objects.filter(campground__id__exact=campground_id)
 
-    if request.method == 'PUT':
+    if request.method == 'POST':
         if request.user.is_authenticated and campground.user == request.user:
             form = NewCampgroundForm(request.POST)
             if form.is_valid():
@@ -89,7 +89,8 @@ def campgroundEdit(request, campground_id):
 @login_required
 def commentsNew(request, campground_id):
     form = NewCommentForm(initial={'text': ''})
-    contex = {'form': form, 'campground_id': campground_id}
+    campgroundName = Campground.objects.get(pk=campground_id).name
+    contex = {'form': form, 'campground_id': campground_id, 'campgroundName': campgroundName}
     return render(request, 'yelpCamp/commentsNew.html', contex)
 
 
