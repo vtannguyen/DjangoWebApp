@@ -1,1 +1,1 @@
-web: gunicorn yelpCamp.wsgi --log-file -
+web: gunicorn mysite.wsgi --log-file -
