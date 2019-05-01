@@ -7,6 +7,7 @@ class Campground(models.Model):
     name = models.CharField(max_length=100)
     imageUrl = models.CharField(max_length=500)
     description = models.CharField(max_length=1000, default='')
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)
 
     def __str__(self):
         return self.name

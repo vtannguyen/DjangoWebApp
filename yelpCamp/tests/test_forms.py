@@ -8,7 +8,8 @@ class NewCampgroundFormTest(TestCase):
         form_data = {
             'name': 'camp 1',
             'imageUrl': CORRECT_IMAGE_URL,
-            'description': 'This campground is beautiful'
+            'description': 'This campground is beautiful',
+            'price': 1.0
         }
         form = NewCampgroundForm(data=form_data)
         self.assertTrue(form.is_valid())

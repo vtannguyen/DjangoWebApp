@@ -26,6 +26,7 @@ def campgrounds(request):
                 name=form.cleaned_data['name'],
                 imageUrl=form.cleaned_data['imageUrl'],
                 description=form.cleaned_data['description'],
+                price=form.cleaned_data['price'],
                 user=request.user
             )
             campground_instance.save()
@@ -56,6 +57,7 @@ def campgroundDetails(request, campground_id):
                 campground.name = form.cleaned_data['name']
                 campground.description = form.cleaned_data['description']
                 campground.imageUrl = form.cleaned_data['imageUrl']
+                campground.price = form.cleaned_data['price']
                 campground.save()
     elif request.method == 'DELETE':
         if request.user.is_authenticated and campground.user == request.user:

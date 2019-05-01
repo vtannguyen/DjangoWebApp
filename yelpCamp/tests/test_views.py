@@ -4,6 +4,7 @@ from ..models import Campground, Comment
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.models import User
+from decimal import Decimal
 from django.contrib.auth.forms import UserCreationForm
 from ..forms import NewCampgroundForm
 
@@ -60,13 +61,14 @@ class AddNewCampgroundTest(TestCase):
         user = createUserAndLogin(self)
         response = self.client.post(reverse(
             'yelpCamp:campgrounds'),
-            {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome'})
+            {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome', 'price': 10.20})
 
         camp_test = Campground.objects.get(name='test Camp')
         self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
         self.assertEqual(camp_test.imageUrl, CORRECT_IMAGE_URL)
         self.assertEqual(camp_test.description, 'this is awesome')
         self.assertEqual(camp_test.user, user)
+        self.assertEqual(camp_test.price, Decimal('10.20'))
 
     def test_create_new_campground_by_not_authenticated_user(self):
         response = self.client.post(reverse(
@@ -98,6 +100,15 @@ class AddNewCampgroundTest(TestCase):
         response = self.client.post(reverse(
             'yelpCamp:campgrounds'),
             {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': ''})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Campground.objects.filter(name='test Camp').exists())
+
+    def test_create_campground_with_empty_price(self):
+        createUserAndLogin(self)
+        response = self.client.post(reverse(
+            'yelpCamp:campgrounds'),
+            {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome'})
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Campground.objects.filter(name='test Camp').exists())
@@ -151,11 +162,13 @@ class CampgroundEditTest(TestCase):
         newName = 'newName'
         newImageUrl = CORRECT_IMAGE_URL
         newDescription = 'new description'
+        newPrice = 5.0
 
         self.client.post(url, data={
             'name': newName,
             'imageUrl': newImageUrl,
-            'description': newDescription
+            'description': newDescription,
+            'price': newPrice
         })
 
         campgroundNew = Campground.objects.get(pk=campground.id)
@@ -163,6 +176,7 @@ class CampgroundEditTest(TestCase):
         self.assertEqual(campgroundNew.name, newName)
         self.assertEqual(campgroundNew.imageUrl, newImageUrl)
         self.assertEqual(campgroundNew.description, newDescription)
+        self.assertEqual(campgroundNew.price, newPrice)
 
     def test_update_ground_not_by_owner(self):
         anotherUser = createUser(username='anotherUser')
