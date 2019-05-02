@@ -77,7 +77,8 @@ def campgroundEdit(request, campground_id):
     form = NewCampgroundForm(initial={
         'name': campground.name,
         'imageUrl': campground.imageUrl,
-        'description': campground.description
+        'description': campground.description,
+        'price': campground.price
     })
     if campground.user.username == request.user.username:
         return render(request, 'yelpCamp/campgroundEdit.html', {
@@ -136,5 +137,3 @@ def userSignup(request):
             'form': UserCreationForm
         }
         return render(request, 'yelpCamp/userSignup.html', context)
-
-

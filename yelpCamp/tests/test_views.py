@@ -4,7 +4,6 @@ from ..models import Campground, Comment
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.models import User
-from decimal import Decimal
 from django.contrib.auth.forms import UserCreationForm
 from ..forms import NewCampgroundForm
 
@@ -22,8 +21,9 @@ def createCampground(
         user=None,
         name='camp 1',
         imageUrl=CORRECT_IMAGE_URL,
-        description='this place is so nice'):
-    return Campground.objects.create(name=name, imageUrl=imageUrl, description=description, user=user)
+        description='this place is so nice',
+        price=10.01):
+    return Campground.objects.create(name=name, imageUrl=imageUrl, description=description, user=user, price=price)
 
 def createUserAndLogin(self, username='username'):
     user = User.objects.create_user(username)
@@ -47,28 +47,71 @@ class CampgroundViewTest(TestCase):
         self.assertQuerysetEqual(response.context['campgroundList'], ['<Campground: camp 2>', '<Campground: camp 1>'])
 
 
-class AddNewCampgroundTest(TestCase):
-    def test_open_campground_create_form_by_not_authenticated_user(self):
-        response = self.client.get(reverse('yelpCamp:campgroundsNew'))
-        self.assertRedirects(response, reverse('login') + '?next=' + reverse('yelpCamp:campgroundsNew'))
+class AddNewCampgroundByAuthenticatedUserTest(TestCase):
+    def setUp(self):
+        self.user = createUserAndLogin(self)
+        self.campgroundListUrl = reverse('yelpCamp:campgrounds')
+        self.campground = {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome', 'price': 10.20}
+        def sendCreationRequest(
+                name=self.campground['name'],
+                imageUrl=self.campground['imageUrl'],
+                description=self.campground['description'],
+                price=self.campground['price']
+            ):
+            return self.client.post(self.campgroundListUrl, {'name': name, 'imageUrl': imageUrl, 'description': description, 'price': price})
+        self.sendCreationRequest = sendCreationRequest
+
+    def tearDown(self):
+        del self.user
+        del self.campground
+        del self.campgroundListUrl
+        del self.sendCreationRequest
 
     def test_open_campground_create_form_by_authenticated_user(self):
-        createUserAndLogin(self)
         response = self.client.get(reverse('yelpCamp:campgroundsNew'))
         self.assertEqual(response.status_code, 200)
 
     def test_create_new_campground_by_authenticated_user(self):
-        user = createUserAndLogin(self)
-        response = self.client.post(reverse(
-            'yelpCamp:campgrounds'),
-            {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome', 'price': 10.20})
+        response = self.sendCreationRequest()
 
-        camp_test = Campground.objects.get(name='test Camp')
-        self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
-        self.assertEqual(camp_test.imageUrl, CORRECT_IMAGE_URL)
-        self.assertEqual(camp_test.description, 'this is awesome')
-        self.assertEqual(camp_test.user, user)
-        self.assertEqual(camp_test.price, Decimal('10.20'))
+        camp_test = Campground.objects.get(name=self.campground['name'])
+        self.assertRedirects(response, self.campgroundListUrl)
+        self.assertEqual(camp_test.imageUrl, self.campground['imageUrl'])
+        self.assertEqual(camp_test.description, self.campground['description'])
+        self.assertEqual(camp_test.user, self.user)
+        self.assertEqual(float(camp_test.price), self.campground['price'])
+
+    def test_create_campground_with_empty_name(self):
+        response = self.sendCreationRequest(name='')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Campground.objects.filter(imageUrl=self.campground['imageUrl']).exists())
+
+    def test_create_campground_with_empty_imageUrl(self):
+        response = self.sendCreationRequest(imageUrl='')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Campground.objects.filter(name=self.campground['name']).exists())
+
+    def test_create_campground_with_empty_description(self):
+        response = self.sendCreationRequest(description='')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Campground.objects.filter(name=self.campground['name']).exists())
+
+    def test_create_campground_with_empty_price(self):
+        response = self.client.post(
+            self.campgroundListUrl,
+            {'name': self.campground['name'], 'imageUrl': self.campground['imageUrl'], 'description': self.campground['description']})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Campground.objects.filter(name=self.campground['name']).exists())
+
+
+class AddNewCampgroundByUnauthenticatedUserTest(TestCase):
+    def test_open_campground_create_form_by_not_authenticated_user(self):
+        response = self.client.get(reverse('yelpCamp:campgroundsNew'))
+        self.assertRedirects(response, reverse('login') + '?next=' + reverse('yelpCamp:campgroundsNew'))
 
     def test_create_new_campground_by_not_authenticated_user(self):
         response = self.client.post(reverse(
@@ -77,44 +120,54 @@ class AddNewCampgroundTest(TestCase):
 
         self.assertQuerysetEqual(response.context['campgroundList'], [])
 
-    def test_create_campground_with_empty_name(self):
-        createUserAndLogin(self)
-        response = self.client.post(reverse(
-            'yelpCamp:campgrounds'),
-            {'name': '', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome'})
+
+class CampgroundEditByOwnerTest(TestCase):
+    def setUp(self):
+        self.campgroundOwner = createUserAndLogin(self)
+        self.campground = createCampground(user=self.campgroundOwner)
+        self.campgroundDetailsUrl = reverse('yelpCamp:campgroundDetails', args=(self.campground.id,))
+        self.campgroundEditUrl = reverse('yelpCamp:campgroundEdit', args=(self.campground.id,))
+
+    def tearDown(self):
+        del self.campgroundOwner
+        del self.campground
+        del self.campgroundDetailsUrl
+        del self.campgroundEditUrl
+
+    def test_open_campground_edit_by_campground_owner(self):
+        response = self.client.get(self.campgroundEditUrl)
 
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(Campground.objects.filter(imageUrl=CORRECT_IMAGE_URL).exists())
-
-    def test_create_campground_with_empty_imageUrl(self):
-        createUserAndLogin(self)
-        response = self.client.post(reverse(
-            'yelpCamp:campgrounds'),
-            {'name': 'test Camp', 'imageUrl': '', 'description': 'this is awesome'})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(Campground.objects.filter(name='test Camp').exists())
-
-    def test_create_campground_with_empty_discription(self):
-        createUserAndLogin(self)
-        response = self.client.post(reverse(
-            'yelpCamp:campgrounds'),
-            {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': ''})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(Campground.objects.filter(name='test Camp').exists())
-
-    def test_create_campground_with_empty_price(self):
-        createUserAndLogin(self)
-        response = self.client.post(reverse(
-            'yelpCamp:campgrounds'),
-            {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome'})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(Campground.objects.filter(name='test Camp').exists())
+        self.assertContains(response, self.campground.imageUrl)
+        self.assertContains(response, self.campground.name)
+        self.assertContains(response, self.campground.description)
+        self.assertContains(response, self.campground.price)
 
 
-class CampgroundEditTest(TestCase):
+    def test_update_campground_by_owner(self):
+        newCampgroundData = {
+            'name': 'newName',
+            'imageUrl': CORRECT_IMAGE_URL,
+            'description': 'new description',
+            'price': 5.0
+        }
+
+        self.client.post(self.campgroundDetailsUrl, data=newCampgroundData)
+        campgroundNew = Campground.objects.get(pk=self.campground.id)
+
+        self.assertEqual(campgroundNew.name, newCampgroundData['name'])
+        self.assertEqual(campgroundNew.imageUrl, newCampgroundData['imageUrl'])
+        self.assertEqual(campgroundNew.description, newCampgroundData['description'])
+        self.assertEqual(campgroundNew.price, newCampgroundData['price'])
+
+    def test_delete_campground_by_owner(self):
+        response = self.client.delete(self.campgroundDetailsUrl)
+
+        self.assertFalse(Campground.objects.filter(pk=self.campground.id).exists())
+        self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
+
+
+class CampgroundEditMiscellaneousTest(TestCase):
     def test_open_campground_edit_by_unauthenticated_user(self):
         campground = createCampground()
         url = reverse('yelpCamp:campgroundEdit', args=(campground.id,))
@@ -122,117 +175,69 @@ class CampgroundEditTest(TestCase):
 
         self.assertRedirects(response, reverse('login') + '?next=' + url)
 
+
+class CampgroundEditNotByOwnerTest(TestCase):
+    def setUp(self):
+        self.campgroundOwner = User.objects.create_user(username='user1', password='123456789')
+        self.campground = createCampground(user=self.campgroundOwner)
+        self.camgroundDetailsRoute = reverse('yelpCamp:campgroundDetails', args=(self.campground.id,))
+        self.anotherUser = createUserAndLogin(self, username='anotherUser')
+
+    def tearDown(self):
+        del self.campground
+        del self.campgroundOwner
+        del self.camgroundDetailsRoute
+        del self.anotherUser
+
     def test_open_campground_edit_not_by_campground_owner(self):
-        campgroundOwner = User.objects.create_user(username='user1', password='123456789')
-        campgroundOwner.save()
-        campground = createCampground(user=campgroundOwner)
-        createUserAndLogin(self, username='anotherUser')
-        url = reverse('yelpCamp:campgroundEdit', args=(campground.id,))
+        url = reverse('yelpCamp:campgroundEdit', args=(self.campground.id,))
         response = self.client.get(url)
 
-        redirectUrl = reverse('yelpCamp:campgroundDetails', args=(campground.id,))
-        self.assertRedirects(response, redirectUrl)
-
-    def test_open_campground_edit_by_campground_owner(self):
-        campgroundOwner = createUserAndLogin(self)
-        campground = createCampground(user=campgroundOwner)
-        url = reverse('yelpCamp:campgroundEdit', args=(campground.id,))
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, campground.imageUrl)
-        self.assertContains(response, campground.name)
-        self.assertContains(response, campground.description)
+        self.assertRedirects(response, self.camgroundDetailsRoute)
 
     def test_open_invalid_campground_to_edit(self):
-        createUserAndLogin(self)
         url = reverse('yelpCamp:campgroundEdit', args=(5,))
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
 
-    def test_update_campground_by_owner(self):
-        campgroundOwner = createUserAndLogin(self)
-        campground = createCampground(
-            name='camp 1',
-            imageUrl='http://www.testImage.com/testImage.jpg',
-            description='this place is no nice',
-            user=campgroundOwner)
-        url = reverse('yelpCamp:campgroundDetails', args=(campground.id,))
-        newName = 'newName'
-        newImageUrl = CORRECT_IMAGE_URL
-        newDescription = 'new description'
-        newPrice = 5.0
-
-        self.client.post(url, data={
-            'name': newName,
-            'imageUrl': newImageUrl,
-            'description': newDescription,
-            'price': newPrice
-        })
-
-        campgroundNew = Campground.objects.get(pk=campground.id)
-
-        self.assertEqual(campgroundNew.name, newName)
-        self.assertEqual(campgroundNew.imageUrl, newImageUrl)
-        self.assertEqual(campgroundNew.description, newDescription)
-        self.assertEqual(campgroundNew.price, newPrice)
-
     def test_update_ground_not_by_owner(self):
-        anotherUser = createUser(username='anotherUser')
-        createUserAndLogin(self)
-        campground = createCampground(
-            name='camp 1',
-            imageUrl='http://www.testImage.com/testImage.jpg',
-            description='this place is no nice',
-            user=anotherUser)
-        url = reverse('yelpCamp:campgroundDetails', args=(campground.id,))
-        newName = 'newName'
-        newImageUrl = CORRECT_IMAGE_URL
-        newDescription = 'new description'
+        newCampgroundData = {
+            'name': 'newName',
+            'imageUrl': CORRECT_IMAGE_URL,
+            'description': 'new description',
+        }
 
-        response = self.client.post(url, {
-            'name': newName,
-            'imageUrl': newImageUrl,
-            'description': newDescription
-        })
-        campgroundNew = Campground.objects.get(pk=campground.id)
+        response = self.client.post(self.camgroundDetailsRoute, newCampgroundData)
+        campgroundNew = Campground.objects.get(pk=self.campground.id)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(campgroundNew.name, campground.name)
-        self.assertEqual(campgroundNew.imageUrl, campground.imageUrl)
-        self.assertEqual(campgroundNew.description, campground.description)
-
-    def test_delete_campground_by_owner(self):
-        campgroundOwner = createUserAndLogin(self)
-        campground = createCampground(user=campgroundOwner)
-        url = reverse('yelpCamp:campgroundDetails', args=(campground.id,))
-
-        response = self.client.delete(url)
-
-        self.assertFalse(Campground.objects.filter(pk=campground.id).exists())
-        self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
+        self.assertEqual(campgroundNew.name, self.campground.name)
+        self.assertEqual(campgroundNew.imageUrl, self.campground.imageUrl)
+        self.assertEqual(campgroundNew.description, self.campground.description)
 
     def test_delete_campground_not_by_owner(self):
-        anotherUser = createUser(username='anotherUser')
-        createUserAndLogin(self)
-        campground = createCampground(user=anotherUser)
-        url = reverse('yelpCamp:campgroundDetails', args=(campground.id,))
+        response = self.client.delete(self.camgroundDetailsRoute)
 
-        response = self.client.delete(url)
-
-        self.assertTrue(Campground.objects.filter(pk=campground.id).exists())
+        self.assertTrue(Campground.objects.filter(pk=self.campground.id).exists())
         self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
 
 
 class CampgroundDetailsViewTest(TestCase):
-    def test_campground_with_comment(self):
-        campground = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
-        createComment(text='this is comment', campground=campground)
+    def setUp(self):
+        self.campground = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
+        self.campgroundUrl = reverse('yelpCamp:campgroundDetails', args=(self.campground.id,))
 
-        response = self.client.get(reverse('yelpCamp:campgroundDetails', args=(campground.id,)))
+    def tearDown(self):
+        del self.campground
+        del self.campgroundUrl
+
+    def test_campground_with_comment(self):
+        createComment(text='this is comment', campground=self.campground)
+
+        response = self.client.get(self.campgroundUrl)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['campground'], campground)
+        self.assertEqual(response.context['campground'], self.campground)
         self.assertQuerysetEqual(response.context['comments'], ['<Comment: this is comment>'])
 
     def test_incorrect_campground_id(self):
@@ -241,106 +246,113 @@ class CampgroundDetailsViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_correct_campground_id(self):
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
-        url = reverse('yelpCamp:campgroundDetails', args=(camp_test.id,))
-        response = self.client.get(url)
+        response = self.client.get(self.campgroundUrl)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, camp_test.name)
-        self.assertContains(response, camp_test.imageUrl)
-        self.assertContains(response, camp_test.description)
+        self.assertContains(response, self.campground.name)
+        self.assertContains(response, self.campground.imageUrl)
+        self.assertContains(response, self.campground.description)
 
 
-class CommentNewViewTest(TestCase):
-    def test_open_add_comment_page_by_not_authenticated_user(self):
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
-        url = reverse('yelpCamp:commentsNew', args=(camp_test.id,))
-        response = self.client.get(url)
-        self.assertRedirects(response, reverse('login') + '?next=' + url)
+class AddCommentByAuthenticatedUserTest(TestCase):
+    def setUp(self):
+        self.user = createUserAndLogin(self)
+        self.camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
+        def sendAddCommentRequest(comment):
+            url = reverse('yelpCamp:comments', args=(self.camp_test.id,))
+            return self.client.post(url, {'text': comment})
+        self.sendAddCommentRequest = sendAddCommentRequest
 
-    def test_open_add_comment_page_by_authenticated_user(self):
-        createUserAndLogin(self)
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
-        url = reverse('yelpCamp:commentsNew', args=(camp_test.id,))
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, camp_test.id)
+    def tearDown(self):
+        del self.user
+        del self.sendAddCommentRequest
 
     def test_add_comment_to_database_by_authenticated_user(self):
-        user = createUserAndLogin(self)
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
         COMMENT = 'this is test comment'
-        url = reverse('yelpCamp:comments', args=(camp_test.id,))
-        response = self.client.post(url, {'text': COMMENT})
+        response = self.sendAddCommentRequest(comment=COMMENT)
         comment = Comment.objects.get(text__exact=COMMENT)
 
-        redirectUrl = reverse('yelpCamp:campgroundDetails', args=(camp_test.id,))
+        redirectUrl = reverse('yelpCamp:campgroundDetails', args=(self.camp_test.id,))
         self.assertRedirects(response, redirectUrl)
-        self.assertEqual(comment.campground.id, camp_test.id)
-        self.assertEqual(comment.user, user)
-
-    def test_add_comment_to_database_by_not_authenticated_user(self):
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
-        COMMENT = 'this is test comment'
-        url = reverse('yelpCamp:comments', args=(camp_test.id,))
-        response = self.client.post(url, {'text': COMMENT})
-
-        redirectUrl = reverse('yelpCamp:campgroundDetails', args=(camp_test.id,))
-        self.assertRedirects(response, redirectUrl)
-
-    def test_send_get_request_to_add_comment_route(self):
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
-        url = reverse('yelpCamp:comments', args=(camp_test.id,))
-        response = self.client.get(url)
-        redirectUrl = reverse('yelpCamp:campgroundDetails', args=(camp_test.id,))
-        self.assertRedirects(response, redirectUrl)
+        self.assertEqual(comment.campground.id, self.camp_test.id)
+        self.assertEqual(comment.user, self.user)
 
     def test_add_empty_comment(self):
-        createUserAndLogin(self)
-        camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
         COMMENT = ''
-        url = reverse('yelpCamp:comments', args=(camp_test.id,))
-        self.client.post(url, {'text': COMMENT})
+        self.sendAddCommentRequest(comment=COMMENT)
 
         self.assertFalse(Comment.objects.filter(text__exact=COMMENT).exists())
 
+    def test_open_add_comment_page_by_authenticated_user(self):
+        url = reverse('yelpCamp:commentsNew', args=(self.camp_test.id,))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.camp_test.id)
+
+
+
+class CommentNewViewTest(TestCase):
+    def setUp(self):
+        self.camp_test = createCampground(name='camp 1', imageUrl=CORRECT_IMAGE_URL)
+        self.addCommentUrl = reverse('yelpCamp:comments', args=(self.camp_test.id,))
+        self.redirectUrl = reverse('yelpCamp:campgroundDetails', args=(self.camp_test.id,))
+
+    def tearDown(self):
+        del self.camp_test
+        del self.addCommentUrl
+        del self.redirectUrl
+
+    def test_open_add_comment_page_by_not_authenticated_user(self):
+        url = reverse('yelpCamp:commentsNew', args=(self.camp_test.id,))
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse('login') + '?next=' + url)
+
+    def test_add_comment_to_database_by_not_authenticated_user(self):
+        COMMENT = 'this is test comment'
+        response = self.client.post(self.addCommentUrl, {'text': COMMENT})
+
+        self.assertRedirects(response, self.redirectUrl)
+
+    def test_send_get_request_to_add_comment_route(self):
+        response = self.client.get(self.addCommentUrl)
+        self.assertRedirects(response, self.redirectUrl)
+
+
 
 class AuthenticationTest(TestCase):
-    def test_sign_up_valid(self):
-        url = reverse('yelpCamp:userSignup')
-        response = self.client.post(url, {
+    def setUp(self):
+        self.user = {
             'username': 'test1',
             'password1': 'test123456',
-            'password2': 'test123456',
-        })
-
-        self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
-        self.assertTrue(User.objects.filter(username__exact='test1').exists())
-
-    def test_sign_up_mismatch_password(self):
-        url = reverse('yelpCamp:userSignup')
-        form_data = {
-            'username': 'test1',
-            'password1': 'test12345',
             'password2': 'test123456',
         }
-        self.client.post(url, form_data)
+        def sendUserCreationRequest(
+                name=self.user['username'],
+                password1=self.user['password1'],
+                password2=self.user['password2']):
+            signupUrl = reverse('yelpCamp:userSignup')
+            return self.client.post(signupUrl, {'username': name, 'password1': password1, 'password2': password2})
+        self.sendUserCreationRequest = sendUserCreationRequest
 
-        self.assertFalse(User.objects.filter(username__exact='test1'))
+    def tearDown(self):
+        del self.user
+        del self.sendUserCreationRequest
+
+    def test_sign_up_valid(self):
+        response = self.sendUserCreationRequest()
+
+        self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
+        self.assertTrue(User.objects.filter(username__exact=self.user['username']).exists())
+
+    def test_sign_up_mismatch_password(self):
+        self.sendUserCreationRequest(password1='test12345')
+
+        self.assertFalse(User.objects.filter(username__exact=self.user['username']))
 
     def test_sign_up_same_username_twice(self):
-        url = reverse('yelpCamp:userSignup')
-        self.client.post(url, {
-            'username': 'test1',
-            'password1': 'test123456',
-            'password2': 'test123456',
-        })
-        user1st = User.objects.get(username__exact='test1')
-        self.client.post(url, {
-            'username': 'test1',
-            'password1': 'test12345',
-            'password2': 'test12345',
-        })
-        user2nd = User.objects.get(username__exact='test1')
+        self.sendUserCreationRequest()
+        user1st = User.objects.get(username__exact=self.user['username'])
+        self.sendUserCreationRequest(password1='helo12345', password2='hello12345')
+        user2nd = User.objects.get(username__exact=self.user['username'])
         self.assertEqual(user1st.password, user2nd.password)
 
     def test_open_sign_up_form(self):
