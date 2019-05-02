@@ -38,6 +38,7 @@ CSRF_COOKIE_SECURE = True
 # Application definition
 
 INSTALLED_APPS = [
+    'graphene_django',
     'yelpCamp.apps.yelpCampConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,6 +48,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'method_override',
 ]
+
+GRAPHENE = {
+    'SCHEMA': 'mysite.schema.schema'
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
