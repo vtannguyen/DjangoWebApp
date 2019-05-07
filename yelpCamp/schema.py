@@ -15,16 +15,29 @@ class CommentType(DjangoObjectType):
         model = Comment
 
 
+class UserType(DjangoObjectType):
+    class Meta:
+        model = User
+
+
 class Query(ObjectType):
     campground = graphene.Field(CampgroundType, id=graphene.Int())
     campgrounds = graphene.List(CampgroundType)
-    comments = graphene.List(CommentType)
+    comments = graphene.List(CommentType, id=graphene.Int())
 
     def resolve_campground(self, info, **kwargs):
         id = kwargs.get('id')
 
         if id is not None:
             return Campground.objects.get(pk=id)
+
+        return None
+
+    def resolve_user(self, info, **kwargs):
+        id = kwargs.get('id')
+
+        if id is not None:
+            return User.objects.get(pk=id)
 
         return None
 
