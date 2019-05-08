@@ -100,7 +100,7 @@ DATABASES = {
     }
 }
 
-LOGIN_REDIRECT_URL = '/yelpCamp'
+LOGIN_REDIRECT_URL = '/yelpCamp/campgrounds'
 
 
 # Password validation

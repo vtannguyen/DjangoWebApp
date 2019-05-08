@@ -1,35 +1,33 @@
 {% extends 'yelpCamp/BaseGeneric.html' %}
 
 {% block content %}
-<div class="container pt-3">
-    <header class="jumbotron py-5">
-        <div class="container">
-            <div class="d-flex flex-row align-items-end pb-3">
-                <img src="https://img.icons8.com/cotton/64/000000/camping-tent.png">
-                <h1 class="mb-0 pl-2">Welcome To YelpCamp!</h1>
-            </div>
-            <p>View our hand-picked campgrounds from all over the world</p>
-            <p>
-                <a class="btn btn-primary btn-large" href="{% url 'yelpCamp:campgroundsNew' %}">
-                    Add new Campground
-                </a>
-            </p>
+<header class="jumbotron py-5">
+    <div class="container">
+        <div class="d-flex flex-row align-items-end pb-3">
+            <img src="https://img.icons8.com/cotton/64/000000/camping-tent.png">
+            <h1 class="mb-0 pl-2">Welcome To YelpCamp!</h1>
         </div>
-    </header>
-
-    <div class="row">
-        {% for campground in campgroundList %}
-        <a href="{% url 'yelpCamp:campgroundDetails' campground.id %}" class="col-md-3 col-sm-6">
-            <div class="card mb-3">
-                <div class="campgroundImageSmall">
-                    <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
-                </div>
-                <div class="caption d-flex flex-column justify-content-center align-items-center">
-                    <h4 class="py-2 mb-0">{{ campground.name }}</h4>
-                </div>
-            </div>
-        </a>
-        {% endfor %}
+        <p>View our hand-picked campgrounds from all over the world</p>
+        <p>
+            <a class="btn btn-primary btn-large" href="{% url 'yelpCamp:campgroundsNew' %}">
+                Add new Campground
+            </a>
+        </p>
     </div>
+</header>
+
+<div class="row">
+    {% for campground in campgroundList %}
+    <a href="{% url 'yelpCamp:campgroundDetails' campground.id %}" class="col-md-3 col-sm-6">
+        <div class="card mb-3">
+            <div class="campgroundImageSmall">
+                <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+            </div>
+            <div class="caption d-flex flex-column justify-content-center align-items-center">
+                <h4 class="py-2 mb-0">{{ campground.name }}</h4>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
 </div>
 {% endblock %}

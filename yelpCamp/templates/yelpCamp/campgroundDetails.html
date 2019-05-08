@@ -1,62 +1,60 @@
 {% extends 'yelpCamp/BaseGeneric.html' %}
 
 {% block content %}
-<div class="container pt-3">
-    <div class="row">
-        <div class="col-md-3">
-            <p class="lead">YelpCamp</p>
-            <div class="list-group">
-                <li class="list-group-item active">Info 1</li>
-                <li class="list-group-item">Info 2</li>
-                <li class="list-group-item">Info 3</li>
+<div class="row">
+    <div class="col-md-3">
+        <p class="lead">YelpCamp</p>
+        <div class="list-group">
+            <li class="list-group-item active">Info 1</li>
+            <li class="list-group-item">Info 2</li>
+            <li class="list-group-item">Info 3</li>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card">
+            <div class="campgroundImageLarge">
+                <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
+            </div>
+            <div class="p-3">
+                <div class="caption-full d-flex flex-row justify-content-between align-items-center mb-1">
+                    <h4 class="mb-0">{{ campground.name }}</h4>
+                    <p class="font-weight-bold font10 mb-0">${{ campground.price }}/night</p>
+                </div>
+                <div class="pl-2">
+                    <p class="mb-0">{{ campground.description }}</p>
+                    <p class="font-italic mb-0 mt-2 font10">Created by: {{ campground.user.username }}</p>
+                </div>
+                <div class="d-flex flex-row p-2">
+                    {% if user.username == campground.user.username %}
+                    <a class="btn btn-sm btn-primary mr-1" href="{% url 'yelpCamp:campgroundEdit' campground.id %}">Edit</a>
+                    {% load method_override %}
+                    <form action="{% url 'yelpCamp:campgroundDetails' campground.id %}" method="POST">
+                        {% csrf_token %}
+                        {% method_override 'DELETE' %}
+                        <input type="submit" value="Delete" class="btn btn-sm btn-danger">
+                    </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        <div class="col-md-9">
-            <div class="card">
-                <div class="campgroundImageLarge">
-                    <img src="{{ campground.imageUrl }}" class="rounded img-fluid" alt="Cinque Terre">
-                </div>
-                <div class="p-3">
-                    <div class="caption-full d-flex flex-row justify-content-between align-items-center mb-1">
-                        <h4 class="mb-0">{{ campground.name }}</h4>
-                        <p class="font-weight-bold font10 mb-0">${{ campground.price }}/night</p>
-                    </div>
-                    <div class="pl-2">
-                        <p class="mb-0">{{ campground.description }}</p>
-                        <p class="font-italic mb-0 mt-2 font10">Created by: {{ campground.user.username }}</p>
-                    </div>
-                    <div class="d-flex flex-row p-2">
-                        {% if user.username == campground.user.username %}
-                        <a class="btn btn-sm btn-primary mr-1" href="{% url 'yelpCamp:campgroundEdit' campground.id %}">Edit</a>
-                        {% load method_override %}
-                        <form action="{% url 'yelpCamp:campgroundDetails' campground.id %}" method="POST">
-                            {% csrf_token %}
-                            {% method_override 'DELETE' %}
-                            <input type="submit" value="Delete" class="btn btn-sm btn-danger">
-                        </form>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
 
-            <div class="card border-primary mb-3 mt-3">
-                <div class="card-header d-flex flex-row-reverse">
-                        <a class="btn btn-sm btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
-                </div>
-                {% for comment in comments %}
-                <div class="card-body text-primary border-top pt-1 pb-1 pl-3 pr-3">
-                    <div class="d-flex flex-row justify-content-between">
-                        <h5 class="card-title mb-0">
-                            {% if comment.user != NULL %}
-                            {{ comment.user.username }}
-                            {% endif %}
-                        </h5>
-                        <p class="font10 mb-0">{{ comment.timestamp }}</p>
-                    </div>
-                    <p class="card-text pl-2">{{ comment.text }}</p>
-                </div>
-                {% endfor %}
+        <div class="card border-primary mb-3 mt-3">
+            <div class="card-header d-flex flex-row-reverse">
+                    <a class="btn btn-sm btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
             </div>
+            {% for comment in comments %}
+            <div class="card-body text-primary border-top pt-1 pb-1 pl-3 pr-3">
+                <div class="d-flex flex-row justify-content-between">
+                    <h5 class="card-title mb-0">
+                        {% if comment.user != NULL %}
+                        {{ comment.user.username }}
+                        {% endif %}
+                    </h5>
+                    <p class="font10 mb-0">{{ comment.timestamp }}</p>
+                </div>
+                <p class="card-text pl-2">{{ comment.text }}</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

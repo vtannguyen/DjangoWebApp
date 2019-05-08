@@ -322,15 +322,27 @@ class AuthenticationTest(TestCase):
     def setUp(self):
         self.user = {
             'username': 'test1',
+            'email': 'example@gmail.com',
+            'first_name': 'Michael',
+            'last_name': 'Lee',
             'password1': 'test123456',
             'password2': 'test123456',
         }
         def sendUserCreationRequest(
                 name=self.user['username'],
+                email=self.user['email'],
+                first_name=self.user['first_name'],
+                last_name=self.user['last_name'],
                 password1=self.user['password1'],
                 password2=self.user['password2']):
             signupUrl = reverse('yelpCamp:userSignup')
-            return self.client.post(signupUrl, {'username': name, 'password1': password1, 'password2': password2})
+            return self.client.post(signupUrl, {
+                'username': name,
+                'email': email,
+                'first_name': first_name,
+                'last_name': last_name,
+                'password1': password1,
+                'password2': password2})
         self.sendUserCreationRequest = sendUserCreationRequest
 
     def tearDown(self):
@@ -339,9 +351,12 @@ class AuthenticationTest(TestCase):
 
     def test_sign_up_valid(self):
         response = self.sendUserCreationRequest()
-
         self.assertRedirects(response, reverse('yelpCamp:campgrounds'))
         self.assertTrue(User.objects.filter(username__exact=self.user['username']).exists())
+        user = User.objects.get(username__exact=self.user['username'])
+        self.assertEqual(user.email, self.user['email'])
+        self.assertEqual(user.first_name, self.user['first_name'])
+        self.assertEqual(user.last_name, self.user['last_name'])
 
     def test_sign_up_mismatch_password(self):
         self.sendUserCreationRequest(password1='test12345')

@@ -1,7 +1,24 @@
 from django.test import TestCase
-from ..forms import NewCampgroundForm, NewCommentForm
+from ..forms import NewCampgroundForm, NewCommentForm, SignUpForm
 
 CORRECT_IMAGE_URL = 'http://www.nextcampsite.com/wp-content/uploads/2014/07/Lost-Creek-Campground-D08.jpg'
+def createUserSignupForm(
+        username='username',
+        email='example@gmail.com',
+        first_name='Michael',
+        last_name='Lee',
+        password1='random123456',
+        password2='random123456',
+        ):
+    form_data = {
+        'username': username,
+        'email': email,
+        'first_name': first_name,
+        'last_name': last_name,
+        'password1': password1,
+        'password2': password2
+    }
+    return SignUpForm(data=form_data)
 
 class NewCampgroundFormTest(TestCase):
     def test_new_campground_form_valid(self):
@@ -44,3 +61,20 @@ class NewCommentFormTest(TestCase):
         form_data = {'text': ''}
         form = NewCommentForm(data=form_data)
         self.assertFalse(form.is_valid())
+
+class UserSignupFormTest(TestCase):
+    def test_valid_user_signup_form(self):
+        form = createUserSignupForm()
+        self.assertTrue(form.is_valid())
+
+    def test_invalid_email_address(self):
+        form = createUserSignupForm(email='notanemail')
+        self.assertFalse(form.is_valid())
+
+    def test_no_first_name(self):
+        form = createUserSignupForm(first_name='')
+        self.assertTrue(form.is_valid())
+
+    def test_no_last_name(self):
+        form = createUserSignupForm(last_name='')
+        self.assertTrue(form.is_valid())
