@@ -102,6 +102,7 @@ DATABASES = {
 
 LOGIN_REDIRECT_URL = '/yelpCamp/campgrounds'
 
+AUTHENTICATION_BACKENDS = ['mysite.authentication.EmailBackend']
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

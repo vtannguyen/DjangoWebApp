@@ -4,16 +4,14 @@ from ..models import Campground, Comment
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
-from ..forms import NewCampgroundForm
 
 # Create your tests here.
 CORRECT_IMAGE_URL = 'http://www.nextcampsite.com/wp-content/uploads/2014/07/Lost-Creek-Campground-D08.jpg'
 def createComment(text, campground):
     return Comment.objects.create(text=text, timestamp=timezone.now(), campground=campground)
 
-def createUser(username='username'):
-    user = User.objects.create_user(username, password='123456789')
+def createUser(username='username', password='123456789', email='example@gmail.com', first_name='Michael', last_name='Lee'):
+    user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
     user.save()
     return user
 
@@ -25,11 +23,10 @@ def createCampground(
         price=10.01):
     return Campground.objects.create(name=name, imageUrl=imageUrl, description=description, user=user, price=price)
 
-def createUserAndLogin(self, username='username'):
-    user = User.objects.create_user(username)
-    user.set_password('123456789')
+def createUserAndLogin(self, username='username', password='123456789', email='example@gmail.com', first_name='Michael', last_name='Lee'):
+    user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
     user.save()
-    self.client.login(username=username, password='123456789')
+    self.client.login(username=username, password=password)
 
     return user
 
@@ -379,4 +376,30 @@ class IndexViewTest(TestCase):
     def test_index_view(self):
         response = self.client.get(reverse('yelpCamp:landing'))
         self.assertEqual(response.status_code, 200)
+
+
+class UserAuthenticationTest(TestCase):
+    def setUp(self):
+        self.password = 'password123456'
+        self.user = createUser(password=self.password)
+
+    def tearDown(self):
+        del self.password
+        del self.user
+
+    def test_log_in_with_valid_username_and_password(self):
+        self.client.login(username=self.user.username, password=self.password)
+        self.assertEqual(int(self.client.session['_auth_user_id']), self.user.pk)
+
+    def test_log_in_with_valid_email_and_password(self):
+        self.client.login(username=self.user.email, password=self.password)
+        self.assertEqual(int(self.client.session['_auth_user_id']), self.user.pk)
+
+    def test_log_in_with_valid_username_and_invalid_password(self):
+        self.client.login(username=self.user.username, password=self.password+'lorem')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_log_in_with_valid_email_and_invalid_password(self):
+        self.client.login(username=self.user.email, password=self.password+'lorem')
+        self.assertNotIn('_auth_user_id', self.client.session)
 
