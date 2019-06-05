@@ -1,0 +1,33 @@
+.campgroundImageLarge {
+    max-height: 400px;
+    overflow: hidden
+}
+
+.error {
+    color: red
+}
+
+.helpText {
+    color: gray
+}
+
+.campgroundImageSmall {
+    height: 150px;
+    overflow: hidden
+}
+
+.font10 {
+    font-size: 10;
+}
+
+.price {
+    font-size: 10
+}
+
+.formField {
+    width: 100%
+}
+
+.navbar-custom {
+    background-color: #bbbbc9
+}
