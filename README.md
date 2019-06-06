@@ -79,7 +79,7 @@ sudo docker-compose -f docker-compose.yml exec web coverage report
 
 ## Usage
 ### Development
- -  Access the app at http://localhost:8000
+ -  Access the app at http://127.0.0.1:8000
 ### Production
  -  Access the app at http://<your_host_name>
 

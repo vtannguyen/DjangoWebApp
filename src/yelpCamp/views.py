@@ -6,6 +6,7 @@ import json
 from django.views import generic
 from django.http import QueryDict
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
@@ -36,7 +37,11 @@ def campgrounds(request):
             return render(request, 'yelpCamp/campgroundsNew.html', {'form': form})
     else:
         campgroundList = Campground.objects.all().order_by('-name')
-        return render(request, 'yelpCamp/campgrounds.html', {'campgroundList': campgroundList})
+        paginator = Paginator(campgroundList, 8)
+
+        page = request.GET.get('page')
+        campgrounds = paginator.get_page(page)
+        return render(request, 'yelpCamp/campgrounds.html', {'campgrounds': campgrounds})
 
 
 @login_required
@@ -48,7 +53,6 @@ def campgroundsNew(request):
 
 def campgroundDetails(request, campground_id):
     campground = get_object_or_404(Campground, pk=campground_id)
-    comments = Comment.objects.filter(campground__id__exact=campground_id)
 
     if request.method == 'POST':
         if request.user.is_authenticated and campground.user == request.user:
@@ -64,10 +68,7 @@ def campgroundDetails(request, campground_id):
             campground.delete()
         return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
 
-    context = {
-        'campground': campground,
-        'comments': comments
-    }
+    context = {'campground': campground}
     return render(request, 'yelpCamp/campgroundDetails.html', context)
 
 

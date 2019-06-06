@@ -42,7 +42,7 @@
             <div class="card-header d-flex flex-row-reverse">
                     <a class="btn btn-sm btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
             </div>
-            {% for comment in comments %}
+            {% for comment in campground.comment_set.all %}
             <div class="card-body text-primary border-top pt-1 pb-1 pl-3 pr-3">
                 <div class="d-flex flex-row justify-content-between">
                     <h5 class="card-title mb-0">
