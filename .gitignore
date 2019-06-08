@@ -1,4 +1,3 @@
 *.pyc
 .coverage
-*.json
 src/staticfiles/admin/*

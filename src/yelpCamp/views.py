@@ -68,7 +68,10 @@ def campgroundDetails(request, campground_id):
             campground.delete()
         return HttpResponseRedirect(reverse('yelpCamp:campgrounds'))
 
-    context = {'campground': campground}
+    paginator = Paginator(campground.comment_set.all(), 4)
+    page = request.GET.get('page')
+    comments = paginator.get_page(page)
+    context = {'campground': campground, 'comments': comments}
     return render(request, 'yelpCamp/campgroundDetails.html', context)
 
 

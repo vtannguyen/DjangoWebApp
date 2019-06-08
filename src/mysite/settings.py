@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get('DJANGO_DEBUG', default=0))
 
-ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1')]
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', '127.0.0.1'), 'localhost']
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True

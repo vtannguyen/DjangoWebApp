@@ -62,7 +62,7 @@ sudo docker-compose -f docker-compose.prod.yml exec web python manage.py collect
 ```
 - To bring down the production containers:
 ```commandline
-sudo docker-compose -f docker-compose.prod.yml down -v
+sudo docker-compose -f docker-compose.prod.yml down
 ```
 
 ## Test
@@ -70,7 +70,7 @@ sudo docker-compose -f docker-compose.prod.yml down -v
 **Note:** Before running test, the docker dev containers should be running already.
 - To run test:
 ```commandline
-sudo docker-compose -f docker-compose.yml exec web coverage run --source='.' manage.py test airportServices.airportInfo
+sudo docker-compose -f docker-compose.yml exec web coverage run --source='.' manage.py test yelpCamp
 ```
 - To get test coverage report:
 ```commandline

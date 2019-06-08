@@ -31,19 +31,7 @@
     {% endfor %}
 </div>
 
-<div class="pagination">
-        <span class="page-links">
-            {% if campgrounds.has_previous %}
-                <a href="?page=1">&laquo; first</a>
-                <a href="{{ request.path }}?page={{ campgrounds.previous_page_number }}">previous</a>
-            {% endif %}
-            <span class="page-current">
-                Page: {{ campgrounds.number }} of {{ campgrounds.paginator.num_pages }}
-            </span>
-            {% if campgrounds.has_next %}
-                <a href="{{ request.path }}?page={{ campgrounds.next_page_number }}">next</a>
-                <a href="?page={{ campgrounds.paginator.num_pages }}">last &raquo;</a>
-            {% endif %}
-        </span>
+<div class="d-flex flex-row justify-content-center">
+    {% include "yelpCamp/_pageNavigation.html" with objectsList=campgrounds %}
 </div>
 {% endblock %}

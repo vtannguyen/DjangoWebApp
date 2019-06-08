@@ -42,7 +42,7 @@
             <div class="card-header d-flex flex-row-reverse">
                     <a class="btn btn-sm btn-primary" href="{% url 'yelpCamp:commentsNew' campground.id %}">Add Comment</a>
             </div>
-            {% for comment in campground.comment_set.all %}
+            {% for comment in comments %}
             <div class="card-body text-primary border-top pt-1 pb-1 pl-3 pr-3">
                 <div class="d-flex flex-row justify-content-between">
                     <h5 class="card-title mb-0">
@@ -55,6 +55,9 @@
                 <p class="card-text pl-2">{{ comment.text }}</p>
             </div>
             {% endfor %}
+            <div class="d-flex flex-row justify-content-center">
+                {% include "yelpCamp/_pageNavigation.html" with objectsList=comments %}
+            </div>
         </div>
     </div>
 </div>

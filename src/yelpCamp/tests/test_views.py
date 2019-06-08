@@ -30,18 +30,20 @@ def createUserAndLogin(self, username='username', password='123456789', email='e
 
     return user
 
+
 class CampgroundViewTest(TestCase):
     def test_no_Campground(self):
         response = self.client.get(reverse('yelpCamp:campgrounds'))
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(response.context['campgroundList'], [])
+        self.assertQuerysetEqual(response.context['campgrounds'], [])
 
     def test_two_Campground(self):
         createCampground(name='camp 1')
         createCampground(name='camp 2')
         response = self.client.get(reverse('yelpCamp:campgrounds'))
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(response.context['campgroundList'], ['<Campground: camp 2>', '<Campground: camp 1>'])
+        self.assertQuerysetEqual(response.context['campgrounds'], ['<Campground: camp 2>', '<Campground: camp 1>'])
+        self.assertEqual(response.context['campgrounds'].paginator.per_page, 8)
 
 
 class AddNewCampgroundByAuthenticatedUserTest(TestCase):
@@ -115,7 +117,7 @@ class AddNewCampgroundByUnauthenticatedUserTest(TestCase):
             'yelpCamp:campgrounds'),
             {'name': 'test Camp', 'imageUrl': CORRECT_IMAGE_URL, 'description': 'this is awesome'})
 
-        self.assertQuerysetEqual(response.context['campgroundList'], [])
+        self.assertQuerysetEqual(response.context['campgrounds'], [])
 
 
 class CampgroundEditByOwnerTest(TestCase):
@@ -236,6 +238,7 @@ class CampgroundDetailsViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['campground'], self.campground)
         self.assertQuerysetEqual(response.context['comments'], ['<Comment: this is comment>'])
+        self.assertEqual(response.context['comments'].paginator.per_page, 4)
 
     def test_incorrect_campground_id(self):
         url = reverse('yelpCamp:campgroundDetails', args=(5,))
